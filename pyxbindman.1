@@ -1,0 +1,146 @@
+.\" Manpage for pyxbindman
+.\"
+.\" Copyright (C) 2013, Georgy Vlasov
+.\"
+.\" You may distribute under the terms of the GNU General Public
+.\" License as specified in the file COPYING that comes with the
+.\" man-db distribution.
+.\"
+.\" Contact wlasowegor@gmail.com to correct errors or typos.
+.\"
+.TH PYXBINDMAN 1 "16 May 2013" "1.0" "pyxbindman man page"
+.SH NAME
+pyxbindman \- a command line tool for convenient xbindkeys configuration management
+.SH SYNOPSIS
+.B pyxbindman
+\fICOMMAND\fR [\fB\-f\fR \fIFILE\fR]
+.br
+.B pyxbindman
+\fB\-d\fR \fIKEYSYM_OR_KEYCODE\fR [\fB\-f\fR \fIFILE\fR]
+.br
+.B pyxbindman
+\fB\-D\fR \fICOMMAND\fR [\fB\-f\fR \fIFILE\fR]
+.br
+.B pyxbindman
+\fB\-i\fR [\fB\-f\fR \fIFILE\fR]
+.br
+.B pyxbindman
+[\fB\-l\fR|\fB\-r\fR|\fB\-s\fR]
+.br
+.SH DESCRIPTION
+.B pyxbindman
+allows adding, removing and listing keyboard 
+.IR bindings .
+It works as a frontend to the 
+.BR xbindkeys (1)
+utility.  Its intention is to make binding keys as quick and simple as possible.
+.BR pyxbindman 's 
+key feature is smart completion of
+commands, keysyms and keycodes. It is supposed that the user is familiar with how 
+.BR xbindkeys (1)
+works.
+.SH OPTIONS
+.TP
+\fB\-d\fR \fIKEYSYM_OR_KEYCODE\fR, \fB\-\-delete\fR \fIKEYSYM_OR_KEYCODE\fR
+Deletes a binding by its \fIkeysym\fR or \fIkeycode\fR. Completion with Tab key over all keysyms used in
+an rc file is available. To delete a binding by its \fIkeycode\fR start the
+argument with \fIm\fR letter and press Tab (see
+.BR xbindkeys (1)
+for keycodes syntax)
+.TP
+\fB-D\fR \fICOMMAND\fR, \fB--delete-by-command\fR \fICOMMAND\fR
+Deletes a binding by its command. Completion with Tab key over all commands
+defined in an 
+.I .xbindkeysrc 
+file is available.
+.TP
+\fB-l\fR, \fB--list\fR
+Lists all bindings defined in 
+.I .xbindkeysrc
+.TP
+\fB-i\fR, \fB--interactive\fR
+Interactive shell-like mode that allows multiple operations: adding, removing
+and listing bindings.
+.TP
+\fB-f\fR \fIFILE\fR, \fB--file\fR \fIFILE\fR
+Defines location of 
+.I .xbindkeysrc
+file. Without this argument,
+.I $HOME/.xbindkeysrc
+is used.
+.TP
+\fB-r\fR, \fB--restart\fR
+Restarts
+.B xbindkeys
+daemon (or starts it, if it is not running). Other commands restart xbindkeys
+automatically, so you usually don't need to call this command after changing
+configuration.
+.TP
+\fB-s\fR, \fB--stop\fR
+Kills 
+.B xbindkeys
+daemon.
+.TP
+\fB-h\fR, \fB--help\fR
+Displays a brief description of options.
+.TP
+.B --get-all-keysyms
+A service action that is used for command line completion. Prints 
+.I keysyms
+of
+all 
+.I bindings
+from a file.
+.SH FILES
+.I ~/.xbindkeysrc
+.RS
+The default file where all the bindings are saved. See
+.BR xbindkeys(1)
+for further details.
+.SH DIAGNOSTICS
+When 
+.BR pyxbindman
+is run with no X Window System available (for example, from Linux console), it
+will return an error code if the action you are attempting implies calling 
+.B xbindkeys -k
+, which can only be run under X.
+.SH EXAMPLES
+.PP
+.nf
+.RS
+# Waits for a key combination and assigns "chromium" command to it
+.B pyxbindman "chromium" 
+
+.PP
+.nf
+# Assigns another, more complicated command
+\fBpyxbindman "gnome-terminal -e 'mc'"\fR
+
+.PP
+.nf
+# Removes whatever is bound to Alt + F9 in ~/.xbindkeysrc and restarts xbindkeys
+.B pyxbindman -d Alt\ +\ F9 
+
+.PP
+.nf
+# Does the same thing (and completion with Tab is available with both quotes and per-symbol escaping)
+.B pyxbindman -d "Alt + F9" 
+
+.PP
+.nf
+# Removes a binding by its keycode (
+.B pyxbindman -d "m:0x40 + c:33"
+
+.PP
+.nf
+# Removes a binding that calls chromium command 
+.B pyxbindman -D chromium 
+
+.PP
+.nf
+# Removes a binding that calls chromium command 
+.B pyxbindman -D chromium 
+.SH SEE ALSO
+.BR xbindkeys (1)
+.SH AUTHOR
+Georgy Vlasov (wlasowegor@gmail.com, https://github.com/Cookson)
