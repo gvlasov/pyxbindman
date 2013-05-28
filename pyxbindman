@@ -8,7 +8,7 @@ import subprocess
 import signal
 from argparse import ArgumentError
 
-VERSION = '1.0.0'
+VERSION = '0.1.0'
 LIST_CONST_VALUE = -1
 
 parser = argparse.ArgumentParser(description='Helps editing xbindkeys cofig')
@@ -20,13 +20,13 @@ add_arg_delete = parser.add_argument(
     metavar='KEYSYM_OR_KEYCODE',
     nargs='?',
     const='-',
-    help='if argument is provided, deletes a binding associated with the given keysym or keycode. Otherwise chooses a key using `xbindkeys -k` and removes a command associated with that key. Completion with Tab available',
+    help='if argument is provided, deletes a binding associated with the given keysym or keycode. Otherwise chooses a key using `xbindkeys -k` and removes a command associated with that key',
     )
 add_arg_delete_by_command = parser.add_argument(
     '-D', 
     '--delete-by-command', 
     metavar='COMMAND',
-    help='remove binding that runs a certain command. Completion with Tab available',
+    help='remove binding that runs a certain command',
     )
 parser.add_argument(
     '-c', 
@@ -58,17 +58,28 @@ parser.add_argument(
     '--show', 
     nargs='?',
     const=LIST_CONST_VALUE,
-    help='shows a particular binding by command, keysym or keycode',
+    help='shows a particular binding by its command, keysym or keycode',
     )
 parser.add_argument(
     '-V', 
     '--version', 
     action='store_true',
-    help='shows a particular binding by command, keysym or keycode',
+    help='displays program version',
     )
 
 
 def main(args):
+    def sigint_handler(signal, frame):
+        '''
+        If user interrupts the program with Control-C, it restarts xbindkeys
+        before exiting, but doesn't do so if xbindkeys wasn't restarted by
+        Xbindkeys obect.
+        '''
+        if xb.xbindkeys_was_killed():
+            subprocess.call(['xbindkeys'])
+        sys.exit(1)
+
+    signal.signal(signal.SIGINT, sigint_handler)
     iterator = iter(sys.argv)
     for arg in iterator:
         if arg in ('-f', '--file'):
@@ -115,15 +126,24 @@ def main(args):
     elif args.show:
         if args.show == LIST_CONST_VALUE:
             keycode, keysym = xb.read_key()
-            print xb.show_binding(keycode=keycode, keysym=keysym)
+            if xb.get_binding(keycode=keycode, keysym=keysym):
+                print xb.show_binding(keycode=keycode, keysym=keysym)
+            else:
+                print 'No biding for', keysym
         else:
             # If there is 1 argument to -l
+            shown = False
             if xb.get_binding(command=args.show):
                 print xb.show_binding(command=args.show)
+                shown = True
             if xb.get_binding(keysym=args.show):
                 print xb.show_binding(keysym=args.show)
+                shown = True
             if xb.get_binding(keycode=args.show):
                 print xb.show_binding(keycode=args.show)
+                shown = True
+            if not shown:
+                print 'No biding for', (keysym if keysym else keycode)
     elif args.command:
         command = args.command
         keysym = args.keysym

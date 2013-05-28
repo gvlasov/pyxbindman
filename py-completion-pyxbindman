@@ -10,10 +10,10 @@ import argparse
 import subprocess
 import signal
 import xbindkeys
+import re
 from argparse import ArgumentError
 
 parser = argparse.ArgumentParser()
-parser.add_argument('pyxbindman', nargs='?')
 parser.add_argument('command', nargs='?')
 parser.add_argument('keysym', nargs='?')
 parser.add_argument(
@@ -44,6 +44,11 @@ parser.add_argument(
     action='store_true',
     )
 parser.add_argument(
+    '-c', 
+    '--change', 
+    action='store_true',
+    )
+parser.add_argument(
     '-s', 
     '--show', 
     nargs='?',
@@ -53,6 +58,7 @@ parser.add_argument(
     )
 parser.add_argument(
     '--option-complete',
+    action='store_true'
     )
 shell_words_opitons = (
         '-d', 
@@ -67,6 +73,8 @@ shell_words_opitons = (
         '--kill', 
         '-s', 
         '--show', 
+        '-c', 
+        '--change', 
         )
 
 def print_completion(all_args):
@@ -85,6 +93,10 @@ def print_completion(all_args):
 
     mut_ex_args = (args.delete, args.delete_by_command, args.command,
             args.restart, args.show, args.kill)
+    # Mutually exclusive arguments.
+    # args.command is also one of them, I have to test for it separately.
+    names_of_mut_ex_args = ('-d', '-D', '-k', '-r', '-s', '--delete',
+        '--delete-by-command', '--kill', '--restart', '--show')
 
     # Exit if any two mutually exclusive arguments are present at the same time
     num_of_mut_ex_args = 0
@@ -96,9 +108,28 @@ def print_completion(all_args):
     last_arg = sys.argv[-1]
     if args.option_complete:
         # Options for completing shell-words of arguments (anything that starts
-        # with a -
-        for word in shell_words_opitons:
-            print word
+        # with a - (hyphen)
+        args.cur_word = re.sub(r'\\', r'', args.cur_word)
+        # argv contains all arguments of pyxbindman command except the current word
+        argv = filter(lambda a: a != args.cur_word, [re.sub(r'\\', r'', arg) for arg in sys.argv])
+        if '--cur-word' in argv:
+            del argv[argv.index('--cur-word')+1]
+            del argv[argv.index('--cur-word')]
+        if '--option-complete' in argv:
+            del argv[argv.index('--option-complete')]
+        no_exclusive_optional_args = frozenset(argv).isdisjoint(frozenset(names_of_mut_ex_args)) 
+
+        if no_exclusive_optional_args and args.command == None:
+            for word in names_of_mut_ex_args:
+                print word
+        if (no_exclusive_optional_args 
+                and not '-c' in argv
+                and not '--change' in argv):
+            print '-c'
+            print '--change'
+        if not '-f' in argv and not '--file' in argv:
+            print '-f'
+            print '--file'
 
     if last_arg == '-D' or last_arg == '--delete-by-command' or args.delete_by_command != None:
         # Options for -D argument
@@ -107,21 +138,22 @@ def print_completion(all_args):
         else:
             for item in xb.get_bindings():
                 print item['command']
-    if last_arg == '-d' or last_arg == '--delete':
+    elif last_arg == '-d' or last_arg == '--delete':
         for item in xb.get_bindings():
             print item['keysym']
-    if last_arg == '-s' or last_arg == '--show' or args.show != None:
-        if args.show != None and (args.show.startswith("m") or args.show.startswith("'m") or
-                args.show.startswith('"m')):
+    elif last_arg == '-s' or last_arg == '--show' or args.show != None:
+        if (args.show != None 
+            and (args.show.startswith("m") 
+            or args.show.startswith("'m") 
+            or args.show.startswith('"m'))):
             # Autocomplete over keycodes if arguments starts with m
             for item in xb.get_bindings():
                 print item['keycode']
-        else:
-            for item in xb.get_bindings():
-                print item['command']
-            for item in xb.get_bindings():
-                print item['keysym']
-    if args.delete != None:
+        for item in xb.get_bindings():
+            print item['command']
+        for item in xb.get_bindings():
+            print item['keysym']
+    elif args.delete != None:
         if (args.delete.startswith('m') or
                 args.delete.startswith('"m') or
                 args.delete.startswith("'m")):
@@ -130,6 +162,16 @@ def print_completion(all_args):
         else:
             for item in xb.get_bindings():
                 print item['keysym']
+    elif args.cur_word == args.command or args.command == None:
+        # If args.command is being completed
+        if args.change:
+            for item in xb.get_bindings():
+                print item['command']
+        else:
+            process = subprocess.Popen(['bash', '-c', 'compgen -ac'], stdout=subprocess.PIPE)
+            (out, err) = process.communicate()
+            for line in out.splitlines():
+                print line
 
 if __name__ == '__main__':
     print_completion(parser.parse_known_args())

@@ -102,72 +102,33 @@ class Library(Xbindkeys):
 class Frontend(Xbindkeys):
     '''
     Tests how pyxbindman works. Each test creates a new cofig file that is
-    filled with the same predifined bindings.
+    filled with the same predefined bindings.
     '''
 
     def test_adding(self):
         path = self.create_config()
 
-        add_binding_process = Popen(
-                ['./pyxbindman', '-f', path],
-                stdin=PIPE
-                )
-        add_binding_process.communicate(input='deep_shit\n')
+        cmd = ['./pyxbindman',  '-f', path, 'deep_shit']
+        print cmd, 'AAAAAA'
+        subprocess.call(cmd)
         with open(path) as file:
             self.assertTrue('deep_shit' in file.read())
 
     def test_listing(self):
         path = self.create_config()
-        list_process = Popen(
-                ['./pyxbindman', '-l', '-f', path],
-                stdout=PIPE
-                )
-        stdout = list_process.communicate()[0]
-        for i,line in enumerate(stdout.splitlines()):
-            print i,line
-        return
-        self.assertEqual(
-                len(stdout.splitlines()), 13
-                )
+        cmd = './pyxbindman -f "' + path +'" -s'
 
     def test_deleting(self):
         path = self.create_config()
-        Popen(
-                ['./pyxbindman', '-d', 'Alt+Ctrl + j', '-f', path],
-                stdout=PIPE
-                )
-        Popen(
-                ['./pyxbindman', '-d', 'm:0x9 + c:12', '-f', path],
-                stdout=PIPE
-                )
-        Popen(
-                ['./pyxbindman', '-D', 'poptran', '-f', path],
-                stdout=PIPE
-                )
-
-    def test_amount_of_bindings_after_adding(self):
-        path = super(Frontend, self).create_config()
-        xb = Xbindkeysrc(path)
-        self.assertTrue(xb.get_config_path() == path)
-
-    def test_interactive(self):
-        path = self.create_config()
-        process = Popen(
-                ['./pyxbindman', '-i', '-f', path],
-                stdin=PIPE
-                )
-        process.communicate(input='d\nf\nq\n')
+        subprocess.call(['./pyxbindman',  '-f', path, '-d', 'Alt+Ctrl + j'])
+        subprocess.call(['./pyxbindman',  '-f', path, '-d', 'm:0x9 + c:12'])
+        subprocess.call(['./pyxbindman',  '-f', path, '-D', 'poptran'])
 
     def test_change(self):
         path = self.create_config()
-        process = Popen(
-                ['./pyxbindman', '-f', path, '-c', 'Control + 8', 'ls'],
-                stdin=PIPE
-                )
-        process = Popen(
-                ['./pyxbindman', '-f', path, '-C', 'ls', 'ls -a'],
-                stdin=PIPE
-                )
+        subprocess.call(['./pyxbindman',  '-f', path, '-c', 'gvim --hello'])
+        with open(path) as file:
+            self.assertTrue('gvim --hello' in file.read())
 
 
 class Completion(Xbindkeys):

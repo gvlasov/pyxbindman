@@ -8,7 +8,7 @@
 .\"
 .\" Contact wlasowegor@gmail.com to correct errors or typos.
 .\"
-.TH PYXBINDMAN 1 "16 May 2013" "1.0" "pyxbindman man page"
+.TH PYXBINDMAN 1 "30 May 2013" "1.0" "pyxbindman man page"
 .SH NAME
 pyxbindman \- a command line tool for hotkeys management
 .SH SYNOPSIS
@@ -46,33 +46,33 @@ over all keys used in \fI.xbindkeysrc\fR file is available. To delete a binding
 by its \fIkeycode\fR start the argument with \fBm\fR letter and press Tab (see
 \fBxbindkeys\fR(1) for keycodes syntax).
 .TP
-\fB-D\fR \fICOMMAND\fR, \fB--delete-by-command\fR \fICOMMAND\fR 
+\fB\-D\fR \fICOMMAND\fR, \fB\-\-delete-by-command\fR \fICOMMAND\fR 
 Deletes a binding by its command. Completion with Tab key over all commands
 defined in an \fI.xbindkeysrc\fR file is available.
 .TP
-\fB-s\fR [\fIKEYSYM\fR | \fIKEYCODE\fR | \fICOMMAND\fR], \fB--show\fR [\fIKEYSYM\fR | \fIKEYCODE\fR | \fICOMMAND\fR]
+\fB\-s\fR [\fIKEYSYM\fR | \fIKEYCODE\fR | \fICOMMAND\fR], \fB\-\-show\fR [\fIKEYSYM\fR | \fIKEYCODE\fR | \fICOMMAND\fR]
 Searches for a particular binding in \fI.xbindkeysrc\fR by its command, keysym or keycode, and shows
 it. When argument is provided, completion with Tab key over all keysyms and
 commands used in \fI.xbindkeysrc\fR file is available. Otherwise a key-grabbing
 window will appear.
 .TP
-\fB-f\fR \fIFILE\fR, \fB--file\fR \fIFILE\fR
+\fB\-f\fR \fIFILE\fR, \fB\-\-file\fR \fIFILE\fR
 Defines location of \fB.xbindkeysrc\fR file. Without this argument,
 \fI$HOME/.xbindkeysrc\fR is used. If set, autocompletion will pick options from
 that file.  If this argument presents, \fBxbindkeys\fR will not be restarted
 after \fBpyxbindman\fR is called.
 .TP
-\fB-r\fR, \fB--restart\fR
+\fB\-r\fR, \fB\-\-restart\fR
 Restarts
 .B xbindkeys
 daemon (or starts it, if it is not running). Other commands restart xbindkeys
 automatically, so you usually don't need to call this command after changing
 configuration with \fBpyxbindman\fR.
 .TP
-\fB-k\fR, \fB--kill\fR
+\fB\-k\fR, \fB\-\-kill\fR
 Kills \fBxbindkeys\fR daemon.
 .TP
-\fB-h\fR, \fB--help\fR
+\fB\-h\fR, \fB\-\-help\fR
 Displays a brief description of options.
 .SH FILES
 .I ~/.xbindkeysrc
@@ -89,7 +89,7 @@ keycode in \fI.xbindkeysrc\fR with \fB\-d\fR and \fB\-D\fR options.
 .nf
 When \fBpyxbindman\fR is run with no X Window System available (for example,
 from Linux console), it will return an error code if the action you are
-attempting implies calling \fBxbindkeys -k\fR, which can only be run under X.
+attempting implies calling \fBxbindkeys \-k\fR, which can only be run under X.
 .SH EXAMPLES
 It is recommended to always use double quotes for arguments containing spaces so
 you won't need to see a lot of escaping with backslashes. However, quotes are
@@ -103,27 +103,27 @@ purely optional, and completion is available with or without them.
 .PP
 .nf
 # Assigns another, more complicated command
-\fBpyxbindman "gnome-terminal -e 'mc'"\fR
+\fBpyxbindman "gnome-terminal \-e 'mc'"\fR
 
 .PP
 .nf
 # Removes whatever is bound to Alt + F9 in ~/.xbindkeysrc and restarts xbindkeys
-\fBpyxbindman -d "Alt + F9"\fR
+\fBpyxbindman \-d "Alt + F9"\fR
 
 .PP
 .nf
 # Removes a binding by its keycode (
-\fBpyxbindman -d "m:0x40 + c:33"\fR
+\fBpyxbindman \-d "m:0x40 + c:33"\fR
 
 .PP
 .nf
 # Removes a binding that calls chromium command 
-\fBpyxbindman -D chromium \fR
+\fBpyxbindman \-D chromium \fR
 
 .PP
 .nf
 # Removes a binding that calls chromium command 
-\fBpyxbindman -D chromium\fR
+\fBpyxbindman \-D chromium\fR
 .SH SEE ALSO
 .BR xbindkeys (1)
 .SH AUTHOR

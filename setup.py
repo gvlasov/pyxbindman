@@ -18,8 +18,8 @@ setup(
         py_modules=['xbindkeys'],
         scripts=['pyxbindman', 'py-completion-pyxbindman'],
         )
-if os.path.isdir('/etc/bash_completion.d'):
-    copyfile('completion.sh', '/etc/bash_completion.d/pyxbindman')
-else:
-    print '! ATTENTION: bash completion could not be installed'
-    sys.exit(1)
+#if os.path.isdir('/etc/bash_completion.d'):
+#    copyfile('completion.sh', '/etc/bash_completion.d/pyxbindman')
+#else:
+#    print '! ATTENTION: bash completion could not be installed'
+#    sys.exit(1)

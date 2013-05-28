@@ -200,7 +200,8 @@ class Xbindkeysrc():
         '''
         with open(os.devnull, 'wb') as devnull:
             if subprocess.call(['pidof', 'xbindkeys'], stdout=devnull) == 0:
-                subprocess.call(['killall', '-HUP', 'xbindkeys'], stdout=devnull, stderr=devnull)
+                subprocess.call(['killall', 'xbindkeys'], stdout=devnull, stderr=devnull)
+                subprocess.call(['xbindkeys'], stdout=devnull, stderr=devnull)
             else:
                 subprocess.call('xbindkeys')
         self.__xbindkeys_was_killed = False
