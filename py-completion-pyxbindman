@@ -1,0 +1,135 @@
+#!/usr/bin/env python
+'''
+This script provides completion optinos for pyxbindman
+'''
+from xbindkeys import Xbindkeysrc, EnvironmentError
+import sys
+import os
+import readline
+import argparse
+import subprocess
+import signal
+import xbindkeys
+from argparse import ArgumentError
+
+parser = argparse.ArgumentParser()
+parser.add_argument('pyxbindman', nargs='?')
+parser.add_argument('command', nargs='?')
+parser.add_argument('keysym', nargs='?')
+parser.add_argument(
+    '-d', 
+    '--delete',
+    nargs='?',
+    metavar='KEYSYM_OR_KEYCODE',
+    )
+parser.add_argument(
+    '-D', 
+    '--delete-by-command', 
+    nargs='?',
+    )
+parser.add_argument(
+    '-f', 
+    '--file', 
+    default=os.path.join(os.getenv('HOME'), '.xbindkeysrc'),
+    nargs='?',
+    )
+parser.add_argument(
+    '-r', 
+    '--restart', 
+    action='store_true',
+    )
+parser.add_argument(
+    '-k', 
+    '--kill', 
+    action='store_true',
+    )
+parser.add_argument(
+    '-s', 
+    '--show', 
+    nargs='?',
+    )
+parser.add_argument(
+    '--cur-word',
+    )
+parser.add_argument(
+    '--option-complete',
+    )
+shell_words_opitons = (
+        '-d', 
+        '--delete',
+        '-D', 
+        '--delete-by-command', 
+        '-f', 
+        '--file', 
+        '-r', 
+        '--restart', 
+        '-k', 
+        '--kill', 
+        '-s', 
+        '--show', 
+        )
+
+def print_completion(all_args):
+    '''
+    Prints a list of completion choices divided by newline character.
+    Used by /etc/bash_completion.d/pyxbindman
+    '''
+    args = all_args[0]
+    unknown_args = all_args[1]
+    if args.file:
+        file = args.file
+    else:
+        file = xbindkeys.DEFAULT_RC
+
+    xb = Xbindkeysrc(file)
+
+    mut_ex_args = (args.delete, args.delete_by_command, args.command,
+            args.restart, args.show, args.kill)
+
+    # Exit if any two mutually exclusive arguments are present at the same time
+    num_of_mut_ex_args = 0
+    for arg in mut_ex_args:
+        if arg != None and arg != False:
+            num_of_mut_ex_args += 1
+            if num_of_mut_ex_args > 1:
+                sys.exit(0)
+    last_arg = sys.argv[-1]
+    if args.option_complete:
+        # Options for completing shell-words of arguments (anything that starts
+        # with a -
+        for word in shell_words_opitons:
+            print word
+
+    if last_arg == '-D' or last_arg == '--delete-by-command' or args.delete_by_command != None:
+        # Options for -D argument
+        if args.cur_word == '' and args.delete_by_command != None:
+            sys.exit(0)
+        else:
+            for item in xb.get_bindings():
+                print item['command']
+    if last_arg == '-d' or last_arg == '--delete':
+        for item in xb.get_bindings():
+            print item['keysym']
+    if last_arg == '-s' or last_arg == '--show' or args.show != None:
+        if args.show != None and (args.show.startswith("m") or args.show.startswith("'m") or
+                args.show.startswith('"m')):
+            # Autocomplete over keycodes if arguments starts with m
+            for item in xb.get_bindings():
+                print item['keycode']
+        else:
+            for item in xb.get_bindings():
+                print item['command']
+            for item in xb.get_bindings():
+                print item['keysym']
+    if args.delete != None:
+        if (args.delete.startswith('m') or
+                args.delete.startswith('"m') or
+                args.delete.startswith("'m")):
+            for item in xb.get_bindings():
+                print item['keycode']
+        else:
+            for item in xb.get_bindings():
+                print item['keysym']
+
+if __name__ == '__main__':
+    print_completion(parser.parse_known_args())

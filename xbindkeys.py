@@ -10,7 +10,7 @@ class Xbindkeysrc():
     def __init__(self, path=False):
         self.__bindings = False
         self.__path = False
-        self.__xbindkeys_was_stopped = False
+        self.__xbindkeys_was_killed = False
         if path:
             self.__path = path
         else:
@@ -93,8 +93,8 @@ class Xbindkeysrc():
         method kills xbindkeys daemon until key combination is provided, and
         then restarts it.
         '''
-        self.__xbindkeys_was_stopped = True
-        self.stop_xbindkeys()
+        self.__xbindkeys_was_killed = True
+        self.kill_xbindkeys()
         process = subprocess.Popen(
                 ['xbindkeys', '-k'],
                 stdout=subprocess.PIPE
@@ -148,8 +148,8 @@ class Xbindkeysrc():
             'keysym': keysym
         })
 
-    def xbindkeys_was_stopped(self):
-        return self.__xbindkeys_was_stopped
+    def xbindkeys_was_killed(self):
+        return self.__xbindkeys_was_killed
 
     def add_binding(self, command, keycode=None, keysym=None):
         '''
@@ -203,9 +203,9 @@ class Xbindkeysrc():
                 subprocess.call(['killall', '-HUP', 'xbindkeys'], stdout=devnull, stderr=devnull)
             else:
                 subprocess.call('xbindkeys')
-        self.__xbindkeys_was_stopped = False
+        self.__xbindkeys_was_killed = False
 
-    def stop_xbindkeys(self):
+    def kill_xbindkeys(self):
         '''
         Kills xbindkeys daemon process
         '''
@@ -235,6 +235,14 @@ class Xbindkeysrc():
             if item['keysym']:
                 f.write('\t'+item['keysym']+'\n')
             f.write('\n')
+
+    def show_binding(self, command=None, keysym=None, keycode=None):
+        if command == None and keysym == None and keycode == None:
+            raise ValueError('You must provide one of command, keysym or keycode arguments')
+        item = self.get_binding(command=command, keysym=keysym, keycode=keycode)
+        if not item:
+            return ''
+        return '"'+item['command']+'" -> '+(item['keysym'] if item['keysym'] else item['keycode']) 
 
     def __repr__(self):
         '''

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 from xbindkeys import Xbindkeysrc, EnvironmentError
 import sys
 import os
@@ -8,17 +8,18 @@ import subprocess
 import signal
 from argparse import ArgumentError
 
+VERSION = '1.0.0'
+LIST_CONST_VALUE = -1
+
 parser = argparse.ArgumentParser(description='Helps editing xbindkeys cofig')
-add_arg_delete = parser.add_argument(
-    '-a',
-    '--add',
-    nargs='+'
-    metavar=('NEW_COMMAND', 'KEYSYM')
-    )
+parser.add_argument('command', nargs='?')
+parser.add_argument('keysym', nargs='?')
 add_arg_delete = parser.add_argument(
     '-d', 
     '--delete',
     metavar='KEYSYM_OR_KEYCODE',
+    nargs='?',
+    const='-',
     help='if argument is provided, deletes a binding associated with the given keysym or keycode. Otherwise chooses a key using `xbindkeys -k` and removes a command associated with that key. Completion with Tab available',
     )
 add_arg_delete_by_command = parser.add_argument(
@@ -28,34 +29,15 @@ add_arg_delete_by_command = parser.add_argument(
     help='remove binding that runs a certain command. Completion with Tab available',
     )
 parser.add_argument(
-    '-l', 
-    '--list', 
-    action='store_true',
-    help='list all commands defined in an .xbindkeysrc file',
-    )
-parser.add_argument(
     '-c', 
     '--change', 
-    metavar=('KEYSYM', 'NEW_COMMAND'),
-    nargs=2,
-    help='finds a key binding by keysym and changes command in it',
-    )
-parser.add_argument(
-    '-C', 
-    '--change-by-command', 
-    metavar=('COMMAND', 'NEW_COMMAND'),
-    nargs=2,
-    help='finds a key binding by command name and changes command in it',
-    )
-parser.add_argument(
-    '-i', 
-    '--interactive', 
     action='store_true',
-    help='interactive mode that allows multiple operations',
+    help='tells the utility to use completion of commands from XBINDKEYSRC when defining a binding',
     )
 parser.add_argument(
     '-f', 
     '--file', 
+    metavar='XBINDKEYSRC',
     default=os.path.join(os.getenv('HOME'), '.xbindkeysrc'),
     help='lets you choose a file in which bindings will be edited and stored (default is $HOME/.xbindkeysrc)',
     )
@@ -66,11 +48,25 @@ parser.add_argument(
     help='restarts xbindkeys daemon (however other commands do so automatically)',
     )
 parser.add_argument(
-    '-s', 
-    '--stop', 
+    '-k', 
+    '--kill', 
     action='store_true',
-    help='stops xbindkeys daemon',
+    help='kills xbindkeys daemon',
     )
+parser.add_argument(
+    '-s', 
+    '--show', 
+    nargs='?',
+    const=LIST_CONST_VALUE,
+    help='shows a particular binding by command, keysym or keycode',
+    )
+parser.add_argument(
+    '-V', 
+    '--version', 
+    action='store_true',
+    help='shows a particular binding by command, keysym or keycode',
+    )
+
 
 def main(args):
     iterator = iter(sys.argv)
@@ -81,21 +77,66 @@ def main(args):
     else:
         file_provided = False
 
-    def tab_completion(items):
-        commands = items
-        completer = MyCompleter(commands)
-        readline.set_completer(completer.complete)
-        readline.parse_and_bind('tab: complete')
-
-    def add_binding(command=None):
-        # Provides text interface for Xbindkeys.add_binding(keycode, keysym)
-        print 'Choose a combination to bind: '
-        try:
+    xb = Xbindkeysrc(args.file)
+    if args.delete != None:
+        if args.delete == '-':
             keycode, keysym = xb.read_key()
-        except EnvironmentError as e:
-            sys.stderr.write(str(e))
+        elif xb.is_keycode(args.delete):
+            keycode = args.delete
+            keysym = None
+        elif xb.is_keysym(args.delete):
+            keycode = None
+            keysym = args.delete
+        else:
+            sys.stderr.write('Argument '+args.delete+' is not a keycode or keysym')
             sys.exit(1)
-        print 'Combination',keysym,'selected'
+        item = xb.remove_binding(keycode=keycode, keysym=keysym)
+        keycode_or_keysym = keysym if keysym != None else keycode
+        if item == False:
+            print 'There is no binding defined for', keycode_or_keysym
+            sys.exit(1)
+        else:
+            print 'Command "' + item['command'] + '" removed from combination '+keycode_or_keysym
+        xb.write_config()
+    elif args.delete_by_command != None:
+        command = args.delete_by_command
+        item = xb.get_binding(command=command)
+        if item == False:
+            print 'There is no binding with command "' + args.delete_by_command + '"'
+            sys.exit(1)
+        keysym = item['keysym']
+        xb.remove_binding(command)
+        print 'Command', command, 'removed from combination', keysym
+        xb.write_config()
+    elif args.restart:
+        xb.restart_xbindkeys()
+    elif args.kill:
+        xb.kill_xbindkeys()
+    elif args.show:
+        if args.show == LIST_CONST_VALUE:
+            keycode, keysym = xb.read_key()
+            print xb.show_binding(keycode=keycode, keysym=keysym)
+        else:
+            # If there is 1 argument to -l
+            if xb.get_binding(command=args.show):
+                print xb.show_binding(command=args.show)
+            if xb.get_binding(keysym=args.show):
+                print xb.show_binding(keysym=args.show)
+            if xb.get_binding(keycode=args.show):
+                print xb.show_binding(keycode=args.show)
+    elif args.command:
+        command = args.command
+        keysym = args.keysym
+        if keysym == None:
+            print 'Choose a combination to bind: '
+            try:
+                keycode, keysym = xb.read_key()
+            except EnvironmentError as e:
+                sys.stderr.write(str(e))
+                sys.exit(1)
+            print 'Combination', keysym, 'selected'
+        else:
+            keycode = None
         binding_exists = xb.binding_exists(keycode, keysym)
         if binding_exists:
             command = xb.get_binding(keycode=keycode, keysym=keysym)['command']
@@ -104,17 +145,10 @@ def main(args):
                 sys.exit()
             else:
                 xb.remove_binding(keysym=keysym)
-                print xb
         # These completer delimiters differ from default ones only in that they
         # don't include a hyphen
         readline.set_completer_delims(' \t\n`~!@#$%^&*()=+[{]}\\|;:\'",<>/?')
         # Make completion for all system commands and aliases avaliable
-        tab_completion(
-                subprocess.Popen(
-                    ["bash", "-c", "compgen -ac"], 
-                    stdout=subprocess.PIPE
-                    ).communicate()[0].split('\n')
-                )
         if binding_exists:
             # If there is a command for that combination, automatically
             # insert that existing command
@@ -127,138 +161,11 @@ def main(args):
         xb.write_config()
         if not file_provided:
             xb.restart_xbindkeys()
-
-    def delete_binding(keycode=None, keysym=None, exit_with_error=False):
-        '''
-        Provides text interface for Xbindkeys.remove_binding(keycode=keycode, keysym=keysym)
-        '''
-        item = xb.remove_binding(keycode=keycode, keysym=keysym)
-        keycode_or_keysym = keysym if keysym != None else keycode
-        if item == False:
-            print 'There is no binding defined for ', keycode_or_keysym
-            if exit_with_error:
-                sys.exit(1)
-        else:
-            print 'Command "' + item['command'] + '" removed from combination '+keycode_or_keysym
-
-
-    def delete_binding_by_command(command, exit_with_error=False):
-        # Provides text interface for Xbindkeys.remove_binding(command=command)
-        item = xb.get_binding(command=command)
-        if item == False:
-            print 'There is no binding with command "' + command + '"'
-            if exit_with_error:
-                sys.exit(1)
-        keysym = item['keysym']
-        xb.remove_binding(command)
-        print 'Command', command, 'removed from combination', keysym
-
-    def sigint_handler(signal, frame):
-        '''
-        If user interrupts the program with Control-C, it restarts xbindkeys
-        before exiting, but doesn't do so if xbindkeys wasn't restarted by
-        Xbindkeys obect.
-        '''
-        if xb.xbindkeys_was_stopped():
-            subprocess.call(['xbindkeys'])
-        sys.exit(1)
-
-    signal.signal(signal.SIGINT, sigint_handler)
-
-    xb = Xbindkeysrc(args.file)
-    if args.list:
-        print xb
-    elif args.interactive:
-        action = None
-        while action is not 'q':
-            action = raw_input('What do you want to do (quit/add/delete by key combination/delete by command/list)? [q/a/d/D/l]: ')
-            if action in ('', 'q', 'Q'):
-                print 'Saving config...'
-                xb.write_config()
-                sys.exit(0)
-            elif action[0] == 'a':
-                add_binding()
-            elif action[0] == 'd':
-                print 'Choose a combination to delete: '
-                keycode, keysym = None, None
-                try:
-                    keycode, keysym = xb.read_key()
-                except EnvironmentError as e:
-                    sys.stderr.write(str(e))
-                    sys.exit(1)
-                delete_binding(keycode=keycode, keysym=keysym)
-            elif action[0] == 'D':
-                commands = [item['command'] for item in xb.get_bindings()]
-                readline.set_completer_delims('\n\t')
-                tab_completion(commands)
-                command = raw_input('Choose a command to unbind (use Tab for completion): ')
-                if not (command in commands):
-                    print 'This command is not bound to any combination in xbindkeys'
-                    return False
-                delete_binding_by_command(command)
-            elif action[0] in ('l', 'L'):
-                print xb
-    elif args.delete != None:
-        if xb.is_keycode(args.delete):
-            delete_binding(keycode=args.delete)
-        elif xb.is_keysym(args.delete):
-            delete_binding(keysym=args.delete)
-        else:
-            sys.stderr.write('Argument '+args.delete+' is not a keycode or keysym')
-            sys.exit(1)
-        xb.write_config()
-    elif args.delete_by_command != None:
-        delete_binding_by_command(command=args.delete_by_command, exit_with_error=True)
-        xb.write_config()
-    elif args.restart:
-        xb.restart_xbindkeys()
-    elif args.stop:
-        xb.stop_xbindkeys()
-    elif args.get_all_keysyms:
-        for item in xb.get_bindings():
-            print item['keysym']
-    elif args.get_all_keycodes:
-        for item in xb.get_bindings():
-            print item['keycode']
-    elif args.get_all_commands:
-        for item in xb.get_bindings():
-            print item['command']
-    elif args.change:
-        if xb.is_keycode(args.change[0]):
-            keycode = args.change[0]
-            keysym = xb.get_binding(keycode=keycode)
-        elif xb.is_keysym(args.change[0]):
-            keysym = args.change[0]
-            keycode = xb.get_binding(keysym=keysym)
-        else:
-            print 'First argument after -c option has to be a keysym or keycode'
-            sys.exit(1)
-        old_command = xb.get_binding(keysym=keysym, keycode=keycode)['command']
-        new_command = args.change[1]
-        print 'Old command'
-        print old_command
-        print 'replaced by'
-        print new_command
-        xb.remove_binding(keycode=keycode, keysym=keysym)
-        xb.add_binding(keycode=keycode, keysym=keysym, command=new_command)
-    elif args.change_by_command:
-        old_command = args.change[0]
-        new_command = args.change[1]
-        keycode = xb.get_binding(command=old_command)['keycode']
-        keysym = xb.get_binding(command=old_command)['keysym']
-        print 'Old command'
-        print old_command
-        print 'replaced by'
-        print new_command
-        xb.remove_binding(command=old_command)
-        xb.add_binding(keycode=keycode, keysym=keysym, command=new_command)
-
+    elif args.version:
+        print VERSION
     else:
-        add_binding(command=args.command)
+        # No arguments at all
+        print xb
 
 if __name__ == '__main__':
-    args = parser.parse_args()
-    if args.completion:
-        print_completion(args.completion)
-    else:
-        main(args)
+    main(parser.parse_args())

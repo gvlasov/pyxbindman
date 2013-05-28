@@ -21,46 +21,6 @@ test_config_text = '''
 "sudo halt"
     m:0xd + c:43
     Control+Shift+Alt + h
-
-"poptran"
-    m:0x0 + c:104
-    KP_Enter
-
-"pyxbindman -r && naughtify 'xbindkeys restarted'"
-    m:0x40 + c:21
-    Mod4 + equal
-
-"skype"
-    m:0x40 + c:39
-    Mod4 + s
-
-"pidgin"
-    m:0x40 + c:33
-    Mod4 + p
-
-"gnome-terminal -e 'mc'"
-    m:0x40 + c:57
-    Mod4 + n
-
-"gnome-terminal -e 'pyxbindman'"
-    m:0x40 + c:20
-    Mod4 + minus
-
-"gnome-terminal -e 'pyxbindman -D'"
-    m:0x41 + c:20
-    Shift+Mod4 + minus
-
-"sudo reboot"
-    m:0xd + c:27
-    Control+Shift+Alt + r
-
-"crawl-tiles"
-    m:0x41 + c:54
-    Shift+Mod4 + c
-
-"ls -l"
-    Control + 8
-
 '''
 class Xbindkeys(unittest.TestCase):
 
@@ -110,7 +70,7 @@ class Library(Xbindkeys):
 
     def testReadConfig(self):
         xb = Xbindkeysrc(self.create_config())
-        self.assertTrue(len(xb.get_bindings()) == 13)
+        self.assertTrue(len(xb.get_bindings()) == 4)
 
     def testAdd(self):
         xb = Xbindkeysrc(self.create_config())
@@ -209,12 +169,11 @@ class Frontend(Xbindkeys):
                 stdin=PIPE
                 )
 
-    def test_interactive(self):
-        path = self.create_config()
-        process = Popen(
-                ['./pyxbindman', '-l', 'Pause', '-f', path],
-                stdin=PIPE
-                )
+
+class Completion(Xbindkeys):
+    def test_completion(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()

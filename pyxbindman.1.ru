@@ -1,0 +1,146 @@
+.\" Manpage for pyxbindman
+.\"
+.\" Copyright (C) 2013, Georgy Vlasov
+.\"
+.\" You may distribute under the terms of the GNU General Public
+.\" License as specified in the file COPYING that comes with the
+.\" man-db distribution.
+.\"
+.\" Contact wlasowegor@gmail.com to correct errors or typos.
+.\"
+.TH PYXBINDMAN 1 "16 May 2013" "1.0" "pyxbindman man page"
+.SH ИМЯ
+pyxbindman \- утилита для управления горячими клавишами X Window System из
+командной строки
+.SH КОМАНДНАЯ СТРОКА
+.B pyxbindman
+\fIКОМАНДА\fR [\fIKEYSYM\fR | \fIKEYCODE\fR] [\fB\-f\fR \fIФАЙЛ\fR]
+.br
+.B pyxbindman
+\fB\-d\fR [\fIKEYSYM\fR | \fIKEYCODE\fR] [\fB\-f\fR \fIФАЙЛ\fR]
+.br
+.B pyxbindman
+\fB\-D\fR \fIКОМАНДА\fR [\fB\-f\fR \fIФАЙЛ\fR]
+.br
+.br
+.B pyxbindman [\fB\-l\fR \fIKEYSYM\fR | \fIKEYCODE\fR | \fIКОМАНДА\fR] [\fB\-f\fR \fIФАЙЛ\fR]
+.br
+.SH Описание
+.B pyxbindman
+позволяет добавлять, удалять и перечислять имеющиеся горячие клавиши.
+Утилита по сути своей — обёртка над 
+.BR xbindkeys (1)
+pyxbindman создавалась, чтобы сделать настройку горячих клавишей быстрой и
+удобной благодаря умному автодополнению. Подразумевается, что пользователь
+знаком с принциапми работы \fBxbindkeys\fR
+.SH ПАРАМЕТРЫ ЗАПУСКА
+.TP
+\fB\-d\fR [\fIKEYSYM\fR | \fIKEYCODE\fR], \fB\-\-delete\fR [\fIKEYSYM\fR | \fIKEYCODE\fR] 
+Удаляет клавиатурное сокращение по его \fIkeysym\fR or \fIkeycode\fR. Если
+аргумент не указан, то будет использовано окно для захвата нажатой комбинации
+клавиш. Если используется аргумент, для него доступно автодополнение по списку
+всех keysym и keycode, имеющихся в .xbindkeysrc. Чтобы получить дополнение по
+списку keycode, начните аргумент с буквы \fBm\fR и нажмите Tab (см. в \fBxbindkeys\fR(1)
+подробнее о синтаксисе keycode)
+.TP
+\fB-D\fR \fIКОМАНДА\fR, \fB--delete-by-command\fR \fIКОМАНДА\fR 
+Удаляет клавиатурное сокращение по имени его команды. Доступно автодополнение по
+списку всех команд, имеющихся в .xbindkeysrc
+.TP
+\fB-s\fR [\fIKEYSYM\fR | \fIKEYCODE\fR | \fIКОМАНДА\fR], \fB--show\fR [\fIKEYSYM\fR | \fIKEYCODE\fR | \fIКОМАНДА\fR]
+Ищет в .xbindkeysrc определённое клавиатурное сокращение по его keysym, keycode
+или имени команды. Аргумент можно дополнять по списку всех команд, keysym и
+keycode, имеющихся в .xbindkeysrc. При вызове без аргумента использует окно для
+захвата комбинации клавиш.
+.TP
+\fB-f\fR \fIFILE\fR, \fB--file\fR \fIFILE\fR
+Указывает путь к файлу конфигурации \fBxbindkeys\fR(1). Если этот аргумент
+присутствует, автодополнение будет осуществляться по указанному файлу вместо
+стандартного \fI$HOME/.xbindkeysrc\fR. Также если аргумент присутствует,
+xbindkeys не будет перезапущена после вызова pyxbindman.
+.TP
+\fB-r\fR, \fB--restart\fR
+Перезапускает демон
+.B xbindkeys
+или запускает его, если демон не был запущен. Вызовы pyxbindman с другими
+аргументами автоматически перезапускают xbindkeys, так что эта опция, как
+правило, не требуется.
+.TP
+\fB-k\fR, \fB--kill\fR
+Убивает демон \fBxbindkeys\fR.
+.TP
+\fB-h\fR, \fB--help\fR
+Показывает краткое описание опций.
+.SH ФАЙЛЫ
+.I ~/.xbindkeysrc
+.RS
+Путь по умолчанию для сохранение конфигурации. См.
+.BR xbindkeys(1)
+.SH ВОЗВРАЩАЕМЫЕ ЗНАЧЕНИЯ
+.PP
+.nf
+\fBpyxbindman\fR возвращает код ошибки 1, если при запуске с опциями \fB\-d\fR
+and \fB\-D\fR указываемая комбинация или команда не присутствуют в файле
+конфигурации.
+.PP
+.nf
+pyxbindman возвращает код ошибки 1 при запуске в среде, где недоступна X Window
+System, если опции запуска подразумевают использование окна для захвата клавиш
+(\fBxbindkeys -k\fR)
+.SH ПРИМЕРЫ 
+Рекомендуется всегда использовать двойные кавычки (") вокруг аргументов,
+содержащих пробелы и другие символы, требующие экранирования, хотя это и не
+обязательно (дополнение доступно в любом случае).
+.PP
+.nf
+.RS
+# Назначить запуск chromium на некоторую комбинацию (вызовет окно для захвата клавиш)
+# \fBpyxbindman chromium\fR
+
+.PP
+.nf
+# То же самое, с более сложной командой
+\fBpyxbindman "gnome-terminal -e 'mc'"\fR
+
+.PP
+.nf
+# Удаляет из ~/.xbindkeysrc клавиатурное сокращение, привязанное к Alt + F9, и
+# перезапускает xbindkeys.
+\fBpyxbindman -d "Alt + F9"\fR
+
+.PP
+.nf
+# Удаляет клавиатурное сокращение по его коду (keycode)
+\fBpyxbindman -d "m:0x40 + c:33"\fR
+
+.PP
+.nf
+# Удаляет клавиатурное сокращение, которое запускает определённую команду
+\fBpyxbindman -D "chromium --incognito" \fR
+
+.PP
+.nf
+# Показыает, на какую клавишу привязана команда
+\fBpyxbindman -s "mocp -G"\fR
+
+.PP
+.nf
+# Показывает, какая команда привязана к определённой комбинации (использует окно
+для захвата клавиш)
+\fBpyxbindman -s\fR
+
+.PP
+.nf
+# Показывает, какая команда привязана к определённой комбинации
+pyxbindman -s "Control+Alt + Space"
+pyxbindman -s "m:0x0 + c:107"
+
+.PP
+.nf
+# Создаёт клавиатурное сокращение в определённом файле
+pyxbindman -f /home/suseika/remote_hosts/work/.xbindkeysrc "deadbeef"
+
+.SH SEE ALSO
+.BR xbindkeys (1)
+.SH AUTHOR
+Georgy Vlasov (wlasowegor@gmail.com, https://github.com/Suseika)

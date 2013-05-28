@@ -9,8 +9,6 @@ Installation
     git clone https://github.com/Suseika/pyxbindman.git
     cd pyxbindman
     sudo python setup.py install
-    # To get Tab completion (the core feature, by the way):
-    sudo cp completion.sh /etc/bash_completion.d/pyxbindman
 
 
 Basic usage
@@ -24,37 +22,40 @@ convenient as soon as you get familiar with command's options.
     # This command uses the same key detecting window as `xbindkeys -k`.
     $ pyxbindman firefox
     Choose a combination to bind: 
-    Combination Control + Alt + apostrophe selected
+    Combination Control+Alt + apostrophe selected
 
     # Delete a mapping for a chosen key combination
-    # Tab completes from a list of keysyms on already defined bindings
+    # Tab completes from a list of keysyms in .xbindkeysrc
     $ pyxbindman -d Mod4+Shift\ +\ o
 
     # Delete a mapping by its command name
-    # Tab completes from a list of commands on already defined bindings
+    # Tab completes from a list of commands in .xbindkeysrc
     $ pyxbindman -D chromium
 
     # List all mappings defined in .xbindkeysrc
-    $ pyxbindman -l
+    $ pyxbindman
     "chromium" -> Mod4 + c
     "pidgin" -> Mod4 + p
     "mocp -G" -> m:0x0 + c:127
     "gnome-terminal -e 'rtorrent'" -> Mod4 + t
-    # Or just find and show a binding by its keysym
-    $ pyxbindman -l "Mod4 + c"
+
+    # Peek at a particular binding by its command name, keysym or keycode
+    $ pyxbindman -s chromium
     "chromium" -> Mod4 + c
-    # Or by command name
-    $ pyxbindman -l pidgin
+    $ pyxbindman -s "Mod4 + p"
     "pidgin" -> Mod4 + p
-    
-    # Change a command bound to a particular combination
-    $ pyxbindman -c Mod4\ +\ p "pidgin --some-option"
-    # Change a particular command bound to a combination
-    $ pyxbindman -C "firefox" "chromium"
-    # With both -c and -C options pressing Tab on second option inserts the
-    # command that is going to be changed, so you can edit it in place.
+    $ pyxbindman -s "m:0x0 + c:127"
+    "mocp -G" -> m:0x0 + c:127
+    # Provide no arguments to do the same with a key-grabbing window
+    $ pyxbindman -s 
+    "chromium" -> Mod4 + c
 
-
+    # -c flag forces completion to come from commands in .xbindkeysrc
+    # (useful when you need to change a command bound to a particular
+    # combination)
+    $ pyxbindman -c "pidgin --some-option"
+    Choose a combination to bind: 
+    Combination Mod4 + p selected
     
 Library
 -------
@@ -85,7 +86,7 @@ will terminate your currently running `xbindkeys` daemon):
         if agreed[0] in ('Y', 'y'):
             xb.add_combination('x-terminal-emulator', code, keysym)
     
-   if False:
+    if False:
        # This would save changes you just did to your .xbindkeysrc file
        xb.write_config()
        xb.restart_xbindkeys()
@@ -100,7 +101,7 @@ will terminate your currently running `xbindkeys` daemon):
     xb2.write_config()
 
 If you like this utility a lot
-==============================
+------------------------------
 
 If you would like to thank me, I'd be glad to
 receive a good Linux game of your choosing in Steam : )
