@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# Attention: some really dirty code ahead. That mess is needed to enable the
+# fancy completion.
 from xbindkeys import Xbindkeysrc, EnvironmentError
 import sys
 import os
@@ -10,6 +12,7 @@ from argparse import ArgumentError
 
 VERSION = '0.1.0'
 LIST_CONST_VALUE = -1
+
 
 parser = argparse.ArgumentParser(description='Helps editing xbindkeys cofig')
 parser.add_argument('command', nargs='?')
@@ -143,7 +146,7 @@ def main(args):
                 print xb.show_binding(keycode=args.show)
                 shown = True
             if not shown:
-                print 'No biding for', (keysym if keysym else keycode)
+                print 'No biding for', args.show
     elif args.command:
         command = args.command
         keysym = args.keysym

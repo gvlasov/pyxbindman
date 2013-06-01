@@ -13,6 +13,9 @@ import xbindkeys
 import re
 from argparse import ArgumentError
 
+if sys.argv[-1].startswith('--'):
+    sys.argv = sys.argv[:-1]
+
 parser = argparse.ArgumentParser()
 parser.add_argument('command', nargs='?')
 parser.add_argument('keysym', nargs='?')
@@ -83,7 +86,12 @@ def print_completion(all_args):
     Used by /etc/bash_completion.d/pyxbindman
     '''
     args = all_args[0]
-    unknown_args = all_args[1]
+    if args.file:
+        # Unquote file argument
+        if args.file.startswith('"') and args.file.endswith('"'):
+            args.file = args.file[1:-1]
+        if args.file.startswith("'") and args.file.endswith("'"):
+            args.file = args.file[1:-1]
     if args.file:
         file = args.file
     else:
@@ -119,7 +127,7 @@ def print_completion(all_args):
             del argv[argv.index('--option-complete')]
         no_exclusive_optional_args = frozenset(argv).isdisjoint(frozenset(names_of_mut_ex_args)) 
 
-        if no_exclusive_optional_args and args.command == None:
+        if no_exclusive_optional_args and (args.command == None or args.command == '-'):
             for word in names_of_mut_ex_args:
                 print word
         if (no_exclusive_optional_args 
@@ -172,6 +180,15 @@ def print_completion(all_args):
             (out, err) = process.communicate()
             for line in out.splitlines():
                 print line
+    elif args.cur_word == args.keysym or args.keysym == None:
+        # If args.command is being completed
+        if args.keysym != None and (args.keysym.startswith('m') or
+                args.keysym.startswith('"m') or
+                args.keysym.startswith("'m")):
+            for item in xb.get_bindings():
+                print item['keycode']
+        for item in xb.get_bindings():
+            print item['keysym']
 
 if __name__ == '__main__':
     print_completion(parser.parse_known_args())

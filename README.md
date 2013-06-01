@@ -45,6 +45,7 @@ everything.
 
 Add a new mapping to `~/.xbindkeysrc` and make it immediately available.
 This command uses the same key detecting window as `xbindkeys -k`.
+    
     $ pyxbindman firefox
     Choose a combination to bind: 
     Combination Control+Alt + apostrophe selected
@@ -55,7 +56,7 @@ Tab completes from a list of keysyms in .xbindkeysrc
     $ pyxbindman -d "Shift+Alt + o"
 
 Or even by its keycode (completion is available when options starts with
-etter `m`:
+etter `m`):
 
     $ pyxbindman -d "m:0x9 c:107"
 
@@ -90,7 +91,7 @@ Provide no arguments to do the same with a key-grabbing window
 than from $PATH (useful when you need to `-c`hange a command bound to a
 particular combination)
 
-    $ pyxbindman -c "chromium --incognito http://shockingly-extravagant-porn.su"
+    $ pyxbindman -c "chromium --incognito http://facebook.com"
     Choose a combination to bind: 
     Combination Mod4 + p selected
 
@@ -116,7 +117,7 @@ Restart xbindkeys
 If you like this utility a lot
 ------------------------------
 
-If you would like to thank me, I'd be glad to receive a good Linux game of your
-choosing in Steam : )
+If you would like to show your appreciation, I'd be glad to receive a good Linux
+game of your choosing in Steam : )
 
 Here I am: http://steamcommunity.com/profiles/76561198038302973/

@@ -1,0 +1,4 @@
+include pyxbindman
+include py-completion-pyxbindman
+include xbindkeys.py
+include README.md

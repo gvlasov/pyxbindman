@@ -9,10 +9,10 @@ DEFAULT_RC = os.path.join(os.getenv('HOME'), '.xbindkeysrc')
 class Xbindkeysrc():
     def __init__(self, path=False):
         self.__bindings = False
-        self.__path = False
+        self.path = False
         self.__xbindkeys_was_killed = False
         if path:
-            self.__path = path
+            self.path = path
         else:
             self.get_config_path()
 
@@ -21,11 +21,11 @@ class Xbindkeysrc():
         Returns path to xbindkeys configuration file. If no argument was
         given to __init__, then returs "/home/current_user/.xbindkeysrc".
         '''
-        if self.__path:
-            return self.__path
+        if self.path:
+            return self.path
         else:
-            self.__path = DEFAULT_RC
-            return self.__path
+            self.path = DEFAULT_RC
+            return self.path
 
     def get_bindings(self, force=False):
         '''
