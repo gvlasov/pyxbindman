@@ -38,34 +38,35 @@ Usually these two commands are everything you need to manage your hotkeys.
 Advanced usage
 --------------
 
-Please note that using pyxbindman will remove comments from .xbindkeysrc file.
+Please note that using pyxbindman will remove comments from `.xbindkeysrc` file.
 
 The core feature of this hotkey manager is that you can Tab-complete almost
 everything.
 
-Add a new mapping to `~/.xbindkeysrc` and make it immediately available.
-This command uses the same key detecting window as `xbindkeys -k`.
+Add a new mapping to `~/.xbindkeysrc` and make it immediately available:
     
     $ pyxbindman firefox
     Choose a combination to bind: 
     Combination Control+Alt + apostrophe selected
 
-Delete a mapping for a chosen key combination
-Tab completes from a list of keysyms in .xbindkeysrc
+This and some other commands use the same key detecting window as `xbindkeys -k`.
+
+Delete a mapping for a chosen key combination. `Tab` completes from a list of
+keysyms in an `.xbindkeysrc`:
 
     $ pyxbindman -d "Shift+Alt + o"
 
-Or even by its keycode (completion is available when options starts with
-etter `m`):
+Or even by its keycode (completion is available when argument starts with
+letter `m`):
 
     $ pyxbindman -d "m:0x9 c:107"
 
-Delete a mapping by its command name
-Tab completes from a list of commands in .xbindkeysrc
+Delete a mapping by its command name. `Tab` completes from a list of commands in
+`.xbindkeysrc`
 
     $ pyxbindman -D chromium
 
-List all mappings defined in .xbindkeysrc
+List all mappings defined in `~/.xbindkeysrc`
 
     $ pyxbindman
     "chromium" -> Control+Alt + c
@@ -73,7 +74,7 @@ List all mappings defined in .xbindkeysrc
     "mocp -G" -> m:0x0 + c:127
     "gnome-terminal -e 'rtorrent'" -> Mod4 + t
 
-Show a particular binding by its command name, keysym or keycode
+Show a particular binding by its command name, keysym or keycode:
 
     $ pyxbindman -s chromium
     "chromium" -> Control+Alt + c
@@ -82,34 +83,42 @@ Show a particular binding by its command name, keysym or keycode
     $ pyxbindman -s "m:0x0 + c:127"
     "mocp -G" -> m:0x0 + c:127
 
-Provide no arguments to do the same with a key-grabbing window
+Without an argument `-s` gets a combination using a key-grabbing window:
 
     $ pyxbindman -s 
     "chromium" -> Mod4 + c
 
-`-c` flag forces completion to come from commands in .xbindkeysrc rather
-than from $PATH (useful when you need to `-c`hange a command bound to a
+`-c` flag forces completion to come from commands in `.xbindkeysrc` rather
+than from `$PATH` (useful when you need to `-c`hange a command bound to a
 particular combination)
 
     $ pyxbindman -c "chromium --incognito http://facebook.com"
     Choose a combination to bind: 
     Combination Mod4 + p selected
 
-For invocations with each option you can provide path to .xbindkeysrc
-file. It defines which file is being edited, and where completion for
-some options comes from.
+For invocations with each option you can provide path to `.xbindkeysrc` file
+using `-f` argument. It defines which file is being edited and used for
+getting completion options.
 
 Show bindings in a file
+
     $ pyxbindman -f ~/oldsystem_copy/.xbindkeysrc 
+
 Add binding to a file
+
     $ pyxbindman -f /home/anotheruser/.xbindkeysrc chromium "Mod + c"
+
 Remove binding from a file
     $ pyxbindman -f /mnt/remote_host/.xbindkeysrc -D pidgin
-... and so on
+
+... and so on.
 
 Kill xbindkeys
+
     $ pyxbindman -k
+
 Restart xbindkeys
+
     $ pyxbindman -r
 
 
