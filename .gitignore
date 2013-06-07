@@ -38,4 +38,4 @@ nosetests.xml
 article
 deb*
 
-install_pip.sp
+install_pip.sh

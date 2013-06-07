@@ -29,13 +29,13 @@ add_arg_delete_by_command = parser.add_argument(
     '-D', 
     '--delete-by-command', 
     metavar='COMMAND',
-    help='remove binding that runs a certain command',
+    help='removes binding that runs a certain command',
     )
 parser.add_argument(
     '-c', 
     '--change', 
     action='store_true',
-    help='tells the utility to use completion of commands from XBINDKEYSRC when defining a binding',
+    help='tells the utility to use completion of commands from .xbindkeysrc when defining a binding',
     )
 parser.add_argument(
     '-f', 
@@ -48,7 +48,7 @@ parser.add_argument(
     '-r', 
     '--restart', 
     action='store_true',
-    help='restarts xbindkeys daemon (however other commands do so automatically)',
+    help='restarts xbindkeys daemon',
     )
 parser.add_argument(
     '-k', 
@@ -95,6 +95,7 @@ def main(args):
     if args.delete != None:
         if args.delete == '-':
             keycode, keysym = xb.read_key()
+            xb.restart_xbindkeys()
         elif xb.is_keycode(args.delete):
             keycode = args.delete
             keysym = None
@@ -133,6 +134,7 @@ def main(args):
                 print xb.show_binding(keycode=keycode, keysym=keysym)
             else:
                 print 'No biding for', keysym
+            xb.restart_xbindkeys()
         else:
             # If there is 1 argument to -l
             shown = False
